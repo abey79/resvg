@@ -727,6 +727,8 @@ impl AttributeId {
                 | AttributeId::WhiteSpace
                 | AttributeId::WordSpacing
                 | AttributeId::WritingMode
+                | AttributeId::Label
+                | AttributeId::Groupmode
         )
     }
 
@@ -813,6 +815,8 @@ fn is_non_inheritable(id: AttributeId) -> bool {
             | AttributeId::StopOpacity
             | AttributeId::TextDecoration
             | AttributeId::Transform
+            | AttributeId::Label
+            | AttributeId::Groupmode
     )
 }
 
