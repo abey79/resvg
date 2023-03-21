@@ -460,6 +460,8 @@ pub(crate) fn convert_group(
     let isolation: Isolation = node.attribute(AId::Isolation).unwrap_or_default();
     let isolate = isolation == Isolation::Isolate;
     let enable_background = node.attribute(AId::EnableBackground);
+    let group_mode = node.attribute(AId::Groupmode);
+    let label: Option<&str> = node.attribute(AId::Label);
 
     let is_g_or_use = matches!(node.tag_name(), Some(EId::G) | Some(EId::Use));
     let required = opacity.get().fuzzy_ne(&1.0)
@@ -468,6 +470,7 @@ pub(crate) fn convert_group(
         || !filters.is_empty()
         || !transform.is_default()
         || enable_background.is_some()
+        || group_mode.is_some()
         || blend_mode != BlendMode::Normal
         || isolate
         || is_g_or_use
@@ -492,6 +495,15 @@ pub(crate) fn convert_group(
             filter_fill,
             filter_stroke,
             enable_background,
+            mode: {
+                if let Some("layer") = group_mode {
+                    GroupMode::Layer(label.unwrap_or_default().to_string())
+                } else if is_g_or_use {
+                    GroupMode::Normal
+                } else {
+                    GroupMode::Virtual
+                }
+            },
         }));
 
         GroupKind::Create(g)
@@ -623,7 +635,10 @@ fn convert_path(
 
     let mut markers_group = None;
     if marker::is_valid(node) && visibility == Visibility::Visible {
-        let mut g = parent.append_kind(NodeKind::Group(Group::default()));
+        let mut g = parent.append_kind(NodeKind::Group(Group {
+            mode: GroupMode::Virtual,
+            ..Group::default()
+        }));
         marker::convert(node, &path, state, cache, &mut g);
         markers_group = Some(g);
     }
