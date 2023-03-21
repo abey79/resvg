@@ -369,6 +369,23 @@ impl_enum_from_str!(BlendMode,
     "luminosity" => BlendMode::Luminosity
 );
 
+/// Group mode
+///
+/// Derived from `inkscape:groupmode` and `inkscape:label`. `GroupMode::Layer` indicates that
+/// `inkscape:groupmode` is set to `layer` and contains the contents of `inkscape:label`.
+/// `GroupMode::Virtual` indicates that the group was created by `usvg` for rendering purposes. This
+/// enables the distinction between actual SVG top-level groups vs. top-level drawables wrapped in
+/// a group.   
+#[allow(missing_docs)]
+#[derive(Clone, PartialEq, Debug)]
+pub enum GroupMode {
+    Normal,
+    Virtual,
+    Layer(String),
+}
+
+impl_enum_default!(GroupMode, Normal);
+
 /// Node's kind.
 #[allow(missing_docs)]
 #[derive(Clone, Debug)]
@@ -511,6 +528,9 @@ pub struct Group {
     /// Can be empty.
     pub id: String,
 
+    /// Group mode
+    pub mode: GroupMode,
+
     /// Element transform.
     pub transform: Transform,
 
@@ -559,6 +579,7 @@ impl Default for Group {
     fn default() -> Self {
         Group {
             id: String::new(),
+            mode: GroupMode::Normal,
             transform: Transform::default(),
             opacity: Opacity::ONE,
             blend_mode: BlendMode::Normal,
